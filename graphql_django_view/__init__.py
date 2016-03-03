@@ -1,4 +1,5 @@
 import json
+from django.conf import settings
 from django.http import HttpResponse, HttpResponseNotAllowed
 from django.http.response import HttpResponseBadRequest
 from django.views.generic import View
@@ -81,11 +82,11 @@ class GraphQLView(View):
         content_type = self.get_content_type(request)
 
         if content_type == 'application/graphql':
-            return {'query': request.body.decode()}
+            return {'query': request.body.decode(self.get_encoding(request))}
 
         elif content_type == 'application/json':
             try:
-                request_json = json.loads(request.body.decode())
+                request_json = json.loads(request.body.decode(self.get_encoding(request)))
                 assert isinstance(request_json, dict)
                 return request_json
             except:
@@ -157,3 +158,7 @@ class GraphQLView(View):
         meta = request.META
         content_type = meta.get('CONTENT_TYPE', meta.get('HTTP_CONTENT_TYPE', ''))
         return content_type.split(';', 1)[0].lower()
+
+    @staticmethod
+    def get_encoding(request):
+        return request.encoding or settings.DEFAULT_CHARSET

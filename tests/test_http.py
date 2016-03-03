@@ -1,3 +1,5 @@
+# coding=utf-8
+from __future__ import unicode_literals
 import pytest
 import json
 
@@ -202,6 +204,18 @@ def test_supports_post_json_query_with_json_variables(client):
     assert response.status_code == 200
     assert response_json(response) == {
         'data': {'test': "Hello Dolly"}
+    }
+
+
+def test_supports_post_json_query_with_json_variables_utf8(client):
+    response = client.post(url_string(), j(
+        query='query helloWho($who: String){ test(who: $who) }',
+        variables={'who': "Name with utf8 ąść"}
+    ), 'application/json')
+
+    assert response.status_code == 200
+    assert response_json(response) == {
+        'data': {'test': "Hello Name with utf8 ąść"}
     }
 
 
